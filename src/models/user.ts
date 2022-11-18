@@ -1,20 +1,18 @@
+import axios, { AxiosResponse } from "axios";
+
+import { Eventing } from "./Eventing";
+
 interface UserData {
   name?: string;
   age?: number;
 }
 
-type Callback = () => {};
-
 export class User {
-  events: { [key: string]: Callback[] } = {};
+  public events: Eventing = new Eventing();
   constructor(private data: UserData) {}
 
   get(propName: string): string | number {
-    if (propName in this.data) {
-      return this.data[propName];
-    } else {
-      return "Sorry, user does not have this property";
-    }
+    return this.data[propName];
   }
 
   set(updateObject: UserData): void {
@@ -24,18 +22,21 @@ export class User {
     };
   }
 
-  on(eventName: string, cb: Callback): void {
-    const handlers = this.events[eventName] || [];
-    handlers.push(cb);
-    this.events[eventName] = handlers;
+  fetch(): void {
+    axios
+      .get(`http://localhost:3004/users/${this.get("id")}`)
+      .then((response: AxiosResponse): void => {
+        console.log(response);
+      });
   }
 
-  trigger(eventName: string): void {
-    const handlers = this.events[eventName];
-    if (!handlers || handlers.length === 0) {
-      return;
+  save(): void {
+    const userId = this.get("id");
+    console.log(userId);
+    if (userId) {
+      axios.put(`http://localhost:3004/users/${userId}`, this.data);
+    } else {
+      axios.post("http://localhost:3004/users", this.data);
     }
-
-    handlers.forEach((cb) => cb());
   }
 }
