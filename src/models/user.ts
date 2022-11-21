@@ -1,14 +1,17 @@
-import axios, { AxiosResponse } from "axios";
-
 import { Eventing } from "./Eventing";
+import { Sync } from "./Sync";
 
 interface UserData {
+  id?: number;
   name?: string;
   age?: number;
 }
 
+const rootUrl = "http://localhost:3000/users/";
 export class User {
   public events: Eventing = new Eventing();
+  public sync: Sync<UserData> = new Sync<UserData>(rootUrl);
+
   constructor(private data: UserData) {}
 
   get(propName: string): string | number {
@@ -20,23 +23,5 @@ export class User {
       ...this.data,
       ...updateObject,
     };
-  }
-
-  fetch(): void {
-    axios
-      .get(`http://localhost:3004/users/${this.get("id")}`)
-      .then((response: AxiosResponse): void => {
-        console.log(response);
-      });
-  }
-
-  save(): void {
-    const userId = this.get("id");
-    console.log(userId);
-    if (userId) {
-      axios.put(`http://localhost:3004/users/${userId}`, this.data);
-    } else {
-      axios.post("http://localhost:3004/users", this.data);
-    }
   }
 }
